@@ -9,13 +9,16 @@ OVERVIEW
   link a subject on one domain to an object on another domain.
 
   The output is an RDF file that uses the voiD vocabulary [1] to capture the
-  statistics in a machine-readable form.
+  statistics in a machine-readable form. It doesn't use the official version
+  of the voiD vocabulary, but an unreleased editor's draft of the upcoming
+  next version of voiD [2].
 
   The script computes statistics by running aggregate queries over the input
-  files, using the ARQ query engine [2].
+  files, using the ARQ query engine [3].
 
   [1] http://vocab.deri.ie/void/guide
-  [2] http://jena.sourceforge.net/ARQ/
+  [2] http://void-impl.googlecode.com/svn/trunk/guide2/index.html
+  [3] http://jena.sourceforge.net/ARQ/
 
 
 REQUIREMENTS
