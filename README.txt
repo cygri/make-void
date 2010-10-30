@@ -23,23 +23,21 @@ OVERVIEW
 
 REQUIREMENTS
 
-  This is a Unix shell script. It has been tested on OS X only. If you
-  successfully run it in another environment, please let me know.
+  * Unix shell environment
+  * ARQ version 2.8.6 or later -- doesn't work on 2.8.5 or before
 
-  Andy Seaborne's ARQ [1] is used to query the input RDF files. You must
-  have ARQ installed and on the path. Only the 'arq' command is used.
-  At the time of writing, the latest release is ARQ-2.8.5. This version
-  has a bug that causes some of the queries to fail with a
-  ARQNotImplementedException. This is fixed in the latest SVN.
 
-  [1] http://jena.sourceforge.net/ARQ/
+LIMITATIONS
+
+  * Size of processable RDF files is limited by availabe memory
 
 
 INSTALLATION
 
-  Make sure that ARQ is installed and on the path.
+  1. Make sure that ARQ is installed and configured. The 'arq' command
+     must be available on the path.
 
-  Copy hostname-function.jar into ARQ's /lib directory.
+  2. Copy hostname-function.jar into ARQ's /lib directory.
 
 
 USAGE
@@ -67,12 +65,6 @@ USAGE
       included.
 
   The output will be saved as <void-output.ttl> in the current directory.
-
-
-LIMITATIONS
-
-  ARQ executes the queries in memory. The size of processable files is thus
-  limited by available memory.
 
 
 HOW IT WORKS
