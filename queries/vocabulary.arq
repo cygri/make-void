@@ -1,0 +1,24 @@
+PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX my: <java:ie.deri.linkeddata.arqext.>
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
+PREFIX afn: <http://jena.hpl.hp.com/ARQ/function#>
+CONSTRUCT {
+    ?dataset a void:Dataset;
+        void:vocabulary ?vocabulary .
+}
+WHERE {
+    SELECT DISTINCT
+        (URI(IF(
+            fn:ends-with(afn:namespace(?term), '#'),
+            fn:substring(afn:namespace(?term), 1, fn:string-length(afn:namespace(?term)) - 1),
+            afn:namespace(?term)
+        )) AS ?vocabulary)
+        ?dataset
+    WHERE {
+        GRAPH <control.ttl> { ?dataset a void:Dataset }
+        { ?s ?term ?o }
+        UNION
+        { ?s a ?term }
+    }
+}

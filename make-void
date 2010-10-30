@@ -1,0 +1,70 @@
+#!/bin/bash
+error=
+while [ $# -gt 0 ]
+do
+    case "$1" in
+        --dataset-uri) dataset="$2"; shift;;
+        --uri-space) space="$2"; shift;;
+        --min) min="$2"; shift;;
+        --) shift; break;;
+        -*) error=1; break;;
+        *)  break;; # terminate while loop
+    esac
+    shift
+done
+input=
+while [ $# -gt 0 ]
+do
+    input="$input --data=$1"
+    shift
+done
+if [ "$error" ]
+then
+    input=
+fi
+if [ "$input" == "" ]
+then
+    echo >&2 "usage: $0 [options] file [...]"
+    echo >&2 ""
+    echo >&2 "Generates voiD statistics for one or more RDF files."
+    echo >&2 ""
+    echo >&2 "Options:"
+    echo >&2 "  --dataset-uri <uri>  Use <uri> as the void:Dataset in the generated voiD file"
+    echo >&2 "  --uri-space <uri>    URIs of entities in the dataset start with <uri>"
+    echo >&2 "  --min <num>          Ignore linksets/partitions with less than <num> items"
+    echo >&2 ""
+    exit 1
+fi
+echo "Deleting existing void-output.ttl"
+rm void-output.ttl
+echo "Creating new control.ttl"
+echo "@prefix void: <http://rdfs.org/ns/void#> ." > control.ttl
+echo "@prefix ov:   <http://open.vocab.org/terms/> ." >> control.ttl
+if [ "$dataset" == "" ]
+then
+    dataset="#dataset"
+fi
+echo "<$dataset> a void:Dataset ." >> control.ttl
+if [ "$space" ]
+then
+    echo "<$dataset> void:uriSpace <$space> ." >> control.ttl
+fi
+if [ "$min" ]
+then
+    echo "<$dataset> ov:configMinimumSetSize $min ." >> control.ttl
+fi
+echo "Running query 1/6"
+arq $input --query=queries/summary.arq --namedGraph control.ttl --base . >> void-output.ttl
+echo "Running query 2/6"
+arq $input --query=queries/vocabulary.arq --namedGraph control.ttl --base . | grep -v "^@prefix" >> void-output.ttl
+echo "Running query 3/6"
+arq $input --query=queries/class-partitions.arq --namedGraph control.ttl --base . | grep -v "^@prefix" >> void-output.ttl
+echo "Running query 4/6"
+arq $input --query=queries/no-class-partition.arq --namedGraph control.ttl --base . | grep -v "^@prefix" >> void-output.ttl
+echo "Running query 5/6"
+arq $input --query=queries/property-partitions.arq --namedGraph control.ttl --base . | grep -v "^@prefix" >> void-output.ttl
+echo "Running query 6/6"
+arq $input --query=queries/linksets.arq --namedGraph control.ttl --base . | grep -v "^@prefix" >> void-output.ttl
+echo "Done! Deleting control.ttl"
+rm control.ttl
+echo "Results written to void-output.ttl"

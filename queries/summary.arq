@@ -1,0 +1,42 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
+CONSTRUCT {
+    ?dataset a void:Dataset;
+        void:uriSpace ?space;
+        void:triples ?triples;
+        void:entities ?entities;
+        void:classes ?classes;
+        void:properties ?properties;
+        .
+}
+WHERE {
+    {
+        SELECT (COUNT(*) AS ?triples) (COUNT(DISTINCT ?p) AS ?properties) WHERE {
+            ?s ?p ?o .
+        }
+    }
+    {
+        # We count instantiated classes, and ignore classes that have only
+        # been declared.
+        # We require classes to have URIs. Anonymous types do not count.
+        SELECT (COUNT(DISTINCT ?type) AS ?classes) WHERE {
+            [] a ?type .
+            FILTER (isURI(?type))
+        }
+    }
+    {
+        # We define entities as any URI occurring in subject position.
+        # If a URI space has been specified, then only matching URIs are
+        # counted.
+        # Other definitions would be possible as well.
+        SELECT (COUNT(DISTINCT ?s) AS ?entities) ?dataset ?space WHERE {
+            GRAPH <control.ttl> {
+                ?dataset a void:Dataset .
+                OPTIONAL { ?dataset void:uriSpace ?space }
+            }
+            ?s ?p ?o .
+            FILTER (isURI(?s) && (!BOUND(?space) || fn:starts-with(STR(?s), STR(?space))))
+        }
+    }
+}

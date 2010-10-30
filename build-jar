@@ -1,0 +1,4 @@
+echo "Creating hostname-function.jar ..."
+mkdir java-classes
+javac -d java-classes -cp java-lib/arq-2.8.5.jar:java-lib/jena-2.6.3.jar java-src/ie/deri/linkeddata/arqext/hostname.java
+jar -cf hostname-function.jar -C java-classes .

@@ -1,0 +1,25 @@
+PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix afn: <http://jena.hpl.hp.com/arq/function#>
+prefix fn:  <http://www.w3.org/2005/xpath-functions#>
+PREFIX ov:  <http://open.vocab.org/terms/>
+CONSTRUCT {
+    ?dataset a void:Dataset;
+        void:classPartition [
+            void:class rdfs:Resource;
+            void:entities ?instances;
+        ] .
+}
+WHERE {
+    SELECT (COUNT(DISTINCT ?s) AS ?instances) ?dataset WHERE {
+        ?s ?p ?o .
+        OPTIONAL { ?s a ?type }
+        FILTER (!BOUND(?type))
+        GRAPH <control.ttl> {
+            ?dataset a void:Dataset .
+            OPTIONAL { ?dataset ov:configMinimumSetSize ?min }
+        }
+    }
+    GROUP BY ?dataset ?min
+    HAVING (!BOUND(?min) || (?instances >= ?min))
+}

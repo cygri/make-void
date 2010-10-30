@@ -1,0 +1,23 @@
+PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX afn: <http://jena.hpl.hp.com/arq/function#>
+PREFIX fn:  <http://www.w3.org/2005/xpath-functions#>
+PREFIX ov:  <http://open.vocab.org/terms/>
+CONSTRUCT {
+    ?dataset a void:Dataset;
+        void:classPartition [
+            void:class ?type;
+            void:entities ?instances;
+        ] .
+}
+WHERE {
+    SELECT (COUNT(DISTINCT ?instance) AS ?instances) ?type ?dataset ?min WHERE {
+        GRAPH <control.ttl> {
+            ?dataset a void:Dataset .
+            OPTIONAL { ?dataset ov:configMinimumSetSize ?min }
+        }
+        ?instance a ?type
+        FILTER (isURI(?type))
+    }
+    GROUP BY ?type ?dataset ?min
+    HAVING (!BOUND(?min) || (?instances >= ?min))
+}

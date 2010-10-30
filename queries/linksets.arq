@@ -1,0 +1,38 @@
+PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX my: <java:ie.deri.linkeddata.arqext.>
+PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
+PREFIX ov:  <http://open.vocab.org/terms/>
+CONSTRUCT {
+    ?dataset a void:Dataset;
+        void:subset [
+            a void:Linkset;
+            void:linkPredicate ?p;
+            void:triples ?triples;
+            void:subjectsTarget ?from;
+            void:objectsTarget ?to;
+        ] .
+}
+WHERE {
+    SELECT ?from ?to ?p (COUNT(*) AS ?triples) ?dataset
+    WHERE {
+        {
+            SELECT
+                (IF((BOUND(?space) && fn:starts-with(STR(?s), STR(?space))), ?dataset, URI(fn:concat('http://lod-cloud.net/domain/', my:hostname(?s)))) AS ?from)
+                (IF((BOUND(?space) && fn:starts-with(STR(?o), STR(?space))), ?dataset, URI(fn:concat('http://lod-cloud.net/domain/', my:hostname(?o)))) AS ?to)
+                ?s ?p ?o ?dataset ?min
+            WHERE { 
+                GRAPH <control.ttl> {
+                    ?dataset a void:Dataset .
+                    OPTIONAL { ?dataset void:uriSpace ?space }
+                    OPTIONAL { ?dataset ov:configMinimumSetSize ?min }
+                }
+                ?s ?p ?o .
+                FILTER (isURI(?s) && isURI(?o) && (?p != rdf:type))
+            }
+        }
+        FILTER (BOUND(?from) && BOUND(?to) && (?from != ?to) && (!BOUND(?space) || ?to = ?dataset || ?from = ?dataset))
+    }
+    GROUP BY ?from ?to ?p ?dataset ?min
+    HAVING (!BOUND(?min) || (?triples >= ?min))
+}

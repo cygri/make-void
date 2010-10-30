@@ -1,0 +1,24 @@
+PREFIX void: <http://rdfs.org/ns/void#>
+prefix afn: <http://jena.hpl.hp.com/arq/function#>
+prefix fn:  <http://www.w3.org/2005/xpath-functions#>
+PREFIX ov:  <http://open.vocab.org/terms/>
+CONSTRUCT {
+    ?dataset a void:Dataset;
+        void:propertyPartition [
+            void:property ?p;
+            void:triples ?triples;
+            void:distinctSubjects ?subjects;
+            void:distinctObjects ?objects;
+        ] .
+}
+WHERE {
+    SELECT (COUNT(*) AS ?triples) (COUNT(DISTINCT ?s) AS ?subjects) (COUNT(DISTINCT ?o) AS ?objects) ?p ?dataset WHERE {
+        ?s ?p ?o .
+        GRAPH <control.ttl> {
+            ?dataset a void:Dataset .
+            OPTIONAL { ?dataset ov:configMinimumSetSize ?min }
+        }
+    }
+    GROUP BY ?p ?dataset ?min
+    HAVING (!BOUND(?min) || (?triples >= ?min))
+}
