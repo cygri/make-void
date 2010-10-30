@@ -19,5 +19,5 @@ WHERE {
         FILTER (isURI(?type))
     }
     GROUP BY ?type ?dataset ?min
-    HAVING (!BOUND(?min) || (?instances >= ?min))
+    HAVING (?instances > 0 && (!BOUND(?min) || (?instances >= ?min)))
 }

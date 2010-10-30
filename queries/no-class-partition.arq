@@ -21,5 +21,5 @@ WHERE {
         }
     }
     GROUP BY ?dataset ?min
-    HAVING (!BOUND(?min) || (?instances >= ?min))
+    HAVING (?instances > 0 && (!BOUND(?min) || (?instances >= ?min)))
 }

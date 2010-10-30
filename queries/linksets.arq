@@ -14,7 +14,7 @@ CONSTRUCT {
         ] .
 }
 WHERE {
-    SELECT ?from ?to ?p (COUNT(*) AS ?triples) ?dataset
+    SELECT ?from ?to ?p (COUNT(*) AS ?triples) ?dataset ?min
     WHERE {
         {
             SELECT
@@ -34,5 +34,5 @@ WHERE {
         FILTER (BOUND(?from) && BOUND(?to) && (?from != ?to) && (!BOUND(?space) || ?to = ?dataset || ?from = ?dataset))
     }
     GROUP BY ?from ?to ?p ?dataset ?min
-    HAVING (!BOUND(?min) || (?triples >= ?min))
+    HAVING (?triples > 0 && (!BOUND(?min) || (?triples >= ?min)))
 }
